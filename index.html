@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIXBOX — Tecnología • Gaming • Comercio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pix: {
+              bg: '#050811',
+              surface: '#0b1121',
+              card: '#10182d',
+              border: '#1e2d4d',
+              blue: '#00a8ff',
+              electric: '#38bdf8',
+              violet: '#7c3aed',
+              silver: '#cbd5e1'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #050811;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #050811; }
+    ::-webkit-scrollbar-thumb { background: #1e2d4d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00a8ff; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-pix-blue selection:text-white">
+
+  <!-- CONFIGURACIÓN CENTRALIZADA (EDITABLE SIN TOCAR LA LÓGICA) -->
+  <script>
+    const PIXBOX_CONFIG = {
+      brandName: "PIXBOX",
+      tagline: "TECNOLOGÍA • GAMING • COMERCIO — Todo en un solo lugar",
+      heroImagePath: "images/pixbox-hero.png",
+      storeWhatsapp: "5493517704300", // Número configurable de la tienda (sin + ni espacios)
+      storeDisplayPhone: "3517704300",
+      storeLocation: "Córdoba, Argentina",
+      storeHours: "Consultar horarios de atención",
+      currencySymbol: "$",
+      categories: [
+        { id: "todos", label: "Todo el catálogo" },
+        { id: "informatica", label: "Informática y PC" },
+        { id: "consolas", label: "Consolas y Juegos" },
+        { id: "perifericos", label: "Periféricos y Monitores" },
+        { id: "componentes", label: "Componentes" },
+        { id: "usados", label: "Usados Particulares" }
+      ],
+      // Catálogo inicial vacío o listo para conectar a base de datos
+      initialProducts: []
+    };
+  </script>
+
+  <!-- BARRA SUPERIOR DE ENCABEZADO Y BUSCADOR -->
+  <header class="sticky top-0 z-40 bg-pix-bg/95 backdrop-blur-md border-b border-pix-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Logo original compacto en navbar -->
+      <a href="#" onclick="resetFilters()" class="flex items-center shrink-0">
+        <img src="images/pixbox-hero.png" alt="PIXBOX" class="h-11 w-auto object-contain block" />
+      </a>
+
+      <!-- Buscador principal -->
+      <div class="flex-1 max-w-2xl relative">
+        <input
+          type="text"
+          id="searchInput"
+          oninput="handleSearch()"
+          placeholder="Buscar productos nuevos, consolas, PC o usados..."
+          class="w-full bg-pix-surface border border-pix-border focus:border-pix-blue rounded-xl py-2.5 pl-4 pr-11 text-sm text-white placeholder-slate-400 focus:outline-none transition"
+        />
+        <svg class="w-5 h-5 text-slate-400 absolute right-3.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <!-- Acciones: Publicar Usado + Carrito Tienda -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <button
+          onclick="openPublishModal()"
+          class="bg-pix-surface hover:bg-pix-card border border-pix-blue/50 text-pix-electric text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2.5 rounded-xl transition flex items-center gap-1.5"
+        >
+          <span>+ Publicar Usado</span>
+          <span class="hidden md:inline text-[11px] bg-pix-blue/20 text-pix-electric px-1.5 py-0.5 rounded">Gratis</span>
+        </button>
+
+        <button
+          onclick="toggleCart()"
+          class="relative bg-pix-blue hover:bg-sky-500 text-slate-950 font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2.5 rounded-xl transition flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span class="hidden sm:inline">Carrito</span>
+          <span id="cartCount" class="bg-slate-950 text-white text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PRESENTACIÓN PRINCIPAL DE MARCA (IMAGEN ORIGINAL SIN ALTERACIONES) -->
+  <section class="w-full bg-pix-bg border-b border-pix-border/60 py-6 sm:py-10 px-4">
+    <div class="max-w-5xl mx-auto flex flex-col items-center justify-center">
+      <img
+        src="images/pixbox-hero.png"
+        alt="PIXBOX - Tecnología • Gaming • Comercio - Todo en un solo lugar"
+        class="w-full max-w-4xl mx-auto h-auto object-contain block"
+      />
+    </div>
+  </section>
+
+  <!-- BARRA DE CATEGORÍAS Y FILTRO DE CONDICIÓN -->
+  <nav class="bg-pix-surface/80 border-b border-pix-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div id="categoryTabs" class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <!-- Generado dinámicamente desde PIXBOX_CONFIG -->
+      </div>
+
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-slate-400">Mostrar:</span>
+        <button onclick="setConditionFilter('all')" id="cond-all" class="cond-btn px-3 py-1.5 rounded-lg font-semibold bg-pix-blue text-slate-950">Todos</button>
+        <button onclick="setConditionFilter('NUEVO')" id="cond-NUEVO" class="cond-btn px-3 py-1.5 rounded-lg font-semibold bg-pix-card text-slate-300 hover:text-white border border-pix-border">NUEVO (Tienda)</button>
+        <button onclick="setConditionFilter('USADO')" id="cond-USADO" class="cond-btn px-3 py-1.5 rounded-lg font-semibold bg-pix-card text-slate-300 hover:text-white border border-pix-border">USADO (Particulares)</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL / CATÁLOGO -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 id="catalogTitle" class="text-xl sm:text-2xl font-bold text-white">Tienda PIXBOX</h1>
+        <p class="text-sm text-slate-400 mt-0.5">
+          Primero encontrá los productos nuevos de PIXBOX. Más abajo, publicaciones gratuitas de particulares.
+        </p>
+      </div>
+      <div class="text-xs text-slate-400" id="resultsCounter">0 publicaciones</div>
+    </div>
+
+    <!-- TIENDA PIXBOX: SIEMPRE PRIMERO -->
+    <section id="newProductsSection" class="mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-5">
+        <div>
+          <div class="text-xs font-bold tracking-widest text-pix-electric mb-1">TIENDA OFICIAL</div>
+          <h2 class="text-2xl font-extrabold text-white">Productos nuevos <span class="text-pix-electric">PIXBOX</span></h2>
+          <p class="text-sm text-slate-400 mt-1">Ofertas, novedades y productos con compra directa en nuestra tienda.</p>
+        </div>
+        <span id="newProductsCounter" class="text-xs text-slate-400"></span>
+      </div>
+      <div id="newProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="newEmptyState" class="bg-pix-surface border border-pix-border rounded-2xl p-8 text-center my-4">
+        <h3 class="text-lg font-bold text-white mb-2">Estamos preparando el catálogo de PIXBOX</h3>
+        <p class="text-sm text-slate-400">Próximamente vas a encontrar acá nuestros productos nuevos, ofertas y lanzamientos.</p>
+      </div>
+    </section>
+
+    <!-- MARKETPLACE DE PARTICULARES: DEBAJO DE LA TIENDA -->
+    <section id="usedProductsSection" class="border-t border-pix-border pt-9">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-5">
+        <div>
+          <div class="text-xs font-bold tracking-widest text-amber-400 mb-1">MARKETPLACE GRATUITO</div>
+          <h2 class="text-2xl font-extrabold text-white">Usados de la comunidad</h2>
+          <p class="text-sm text-slate-400 mt-1">Publicaciones de particulares. Contacto directo entre comprador y vendedor.</p>
+        </div>
+        <button onclick="openPublishModal()" class="bg-pix-card hover:bg-slate-800 border border-pix-border text-amber-300 text-xs font-semibold px-4 py-2 rounded-xl">+ Publicar gratis</button>
+      </div>
+      <div id="usedProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+      <div id="usedEmptyState" class="hidden bg-pix-surface border border-pix-border rounded-2xl p-8 text-center my-4">
+        <p class="text-sm text-slate-400">Todavía no hay publicaciones de particulares en esta categoría.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL PARA PUBLICAR PRODUCTO USADO (PARTICULARES - GRATIS) -->
+  <div id="publishModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-pix-surface border border-pix-border rounded-2xl max-w-lg w-full p-6 shadow-2xl my-8">
+      <div class="flex items-center justify-between border-b border-pix-border pb-4 mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-white">Publicar Producto Usado</h3>
+          <p class="text-xs text-slate-400">Publicación gratuita • Contacto directo por WhatsApp sin comisiones</p>
+        </div>
+        <button onclick="closePublishModal()" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <form id="publishForm" onsubmit="submitUsedProduct(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Título del producto *</label>
+          <input type="text" id="pubTitle" required placeholder="Ej: PlayStation 4 Slim 1TB + 2 Joysticks" class="w-full bg-pix-bg border border-pix-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-pix-blue focus:outline-none" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría *</label>
+            <select id="pubCategory" required class="w-full bg-pix-bg border border-pix-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-pix-blue focus:outline-none">
+              <option value="informatica">Informática y PC</option>
+              <option value="consolas">Consolas y Juegos</option>
+              <option value="perifericos">Periféricos y Monitores</option>
+              <option value="componentes">Componentes</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Precio (ARS) *</label>
+            <input type="number" id="pubPrice" required min="1" placeholder="Ej: 350000" class="w-full bg-pix-bg border border-pix-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-pix-blue focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tu WhatsApp de contacto (con código de área) *</label>
+          <input type="tel" id="pubWhatsapp" required placeholder="Ej: 3511234567" class="w-full bg-pix-bg border border-pix-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-pix-blue focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Descripción y estado del equipo *</label>
+          <textarea id="pubDescription" required rows="3" placeholder="Detallá estado estético, accesorios incluidos, tiempo de uso..." class="w-full bg-pix-bg border border-pix-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-pix-blue focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Fotografías del producto</label>
+          <input type="file" id="pubImages" accept="image/*" multiple onchange="previewUploadedImages(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pix-card file:text-pix-electric hover:file:bg-slate-800 cursor-pointer" />
+          <div id="imagePreviewContainer" class="flex gap-2 mt-2 overflow-x-auto"></div>
+        </div>
+
+        <div class="bg-pix-bg/80 border border-pix-border rounded-xl p-3 text-[11px] text-slate-400">
+          El comprador se comunicará directamente a tu WhatsApp. PIXBOX no cobra comisión ni interviene en el pago entre particulares.
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closePublishModal()" class="px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:text-white">Cancelar</button>
+          <button type="submit" class="bg-pix-blue hover:bg-sky-500 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-xl transition">Publicar Gratis</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CARRITO LATERAL (SOLO PRODUCTOS NUEVOS DE LA TIENDA) -->
+  <div id="cartDrawer" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex justify-end">
+    <div class="bg-pix-surface border-l border-pix-border w-full max-w-md h-full flex flex-col p-6">
+      <div class="flex items-center justify-between border-b border-pix-border pb-4">
+        <div>
+          <h3 class="text-lg font-bold text-white">Carrito PIXBOX</h3>
+          <p class="text-xs text-slate-400">Productos nuevos de la tienda</p>
+        </div>
+        <button onclick="toggleCart()" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <div id="cartItems" class="flex-1 overflow-y-auto py-4 space-y-3">
+        <!-- Items del carrito -->
+      </div>
+
+      <div class="border-t border-pix-border pt-4 space-y-3">
+        <div class="flex items-center justify-between text-base font-bold">
+          <span class="text-slate-300">Total estimado</span>
+          <span id="cartTotal" class="text-pix-electric">$ 0</span>
+        </div>
+        <button onclick="checkoutStoreCart()" id="checkoutBtn" disabled class="w-full bg-pix-blue disabled:opacity-40 hover:bg-sky-500 text-slate-950 font-bold py-3 rounded-xl transition">
+          Finalizar Compra con la Tienda
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="bg-pix-surface border-t border-pix-border mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <div>
+        <span class="font-bold text-white">PIXBOX</span> — Tecnología • Gaming • Comercio. Todo en un solo lugar.
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
+        <span id="footerLocation"></span>
+        <a id="footerWhatsapp" href="#" target="_blank" class="text-pix-electric hover:underline">Contacto Tienda</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LÓGICA DE APLICACIÓN PREPARADA PARA BASE DE DATOS -->
+  <script>
+    // Capa de servicio de datos (lista para conectar a Supabase / Firebase / API REST)
+    const DataService = {
+      STORAGE_KEY: 'pixbox_catalog_v1',
+      async getAllProducts() {
+        const saved = localStorage.getItem(this.STORAGE_KEY);
+        if (saved) {
+          try { return JSON.parse(saved); } catch (e) { return [...PIXBOX_CONFIG.initialProducts]; }
+        }
+        return [...PIXBOX_CONFIG.initialProducts];
+      },
+      async saveUsedProduct(product) {
+        const current = await this.getAllProducts();
+        current.unshift(product);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(current));
+        return product;
+      }
+    };
+
+    let state = {
+      products: [],
+      cart: [],
+      selectedCategory: 'todos',
+      selectedCondition: 'all',
+      searchQuery: '',
+      uploadedPhotos: []
+    };
+
+    async function initApp() {
+      document.getElementById('footerLocation').textContent = PIXBOX_CONFIG.storeLocation;
+      const waLink = document.getElementById('footerWhatsapp');
+      waLink.href = `https://wa.me/${PIXBOX_CONFIG.storeWhatsapp}`;
+      waLink.textContent = `WhatsApp Tienda: ${PIXBOX_CONFIG.storeDisplayPhone}`;
+
+      renderCategories();
+      state.products = await DataService.getAllProducts();
+      renderProducts();
+      renderCart();
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = PIXBOX_CONFIG.categories.map(cat => {
+        const active = state.selectedCategory === cat.id;
+        return `
+          <button
+            onclick="selectCategory('${cat.id}')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+              active
+                ? 'bg-pix-blue text-slate-950'
+                : 'bg-pix-card text-slate-300 hover:text-white border border-pix-border'
+            }"
+          >
+            ${cat.label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectCategory(catId) {
+      state.selectedCategory = catId;
+      const found = PIXBOX_CONFIG.categories.find(c => c.id === catId);
+      document.getElementById('catalogTitle').textContent = found ? found.label : 'Catálogo';
+      renderCategories();
+      renderProducts();
+    }
+
+    function setConditionFilter(cond) {
+      state.selectedCondition = cond;
+      document.querySelectorAll('.cond-btn').forEach(btn => {
+        btn.className = 'cond-btn px-3 py-1.5 rounded-lg font-semibold bg-pix-card text-slate-300 hover:text-white border border-pix-border';
+      });
+      const activeBtn = document.getElementById(`cond-${cond}`);
+      if (activeBtn) {
+        activeBtn.className = 'cond-btn px-3 py-1.5 rounded-lg font-semibold bg-pix-blue text-slate-950';
+      }
+      renderProducts();
+    }
+
+    function handleSearch() {
+      state.searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      renderProducts();
+    }
+
+    function resetFilters() {
+      state.selectedCategory = 'todos';
+      state.selectedCondition = 'all';
+      state.searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('catalogTitle').textContent = 'Catálogo General';
+      renderCategories();
+      setConditionFilter('all');
+    }
+
+    function formatPrice(value) {
+      return `${PIXBOX_CONFIG.currencySymbol} ${Number(value).toLocaleString('es-AR')}`;
+    }
+
+    function renderProductCards(products) {
+      return products.map(p => {
+        const isUsed = p.condition === 'USADO';
+        const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : 'images/pixbox-hero.png';
+        const badgeClass = isUsed
+          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        const actionButton = isUsed
+          ? `<a href="https://wa.me/${p.sellerWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hola! Vi tu publicación en PIXBOX: ' + p.title)}" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-1.5">Contactar al Vendedor</a>`
+          : `<button onclick="addToCart('${p.id}')" class="w-full bg-pix-blue hover:bg-sky-500 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl transition">Agregar al Carrito</button>`;
+        return `
+          <article class="bg-pix-card border border-pix-border hover:border-pix-blue/60 rounded-2xl overflow-hidden flex flex-col transition">
+            <div class="relative aspect-video bg-pix-bg overflow-hidden">
+              <img src="${imgSrc}" alt="${p.title}" class="w-full h-full object-cover" />
+              <span class="absolute top-3 left-3 text-[11px] font-extrabold px-2.5 py-1 rounded-lg border ${badgeClass}">${p.condition}</span>
+            </div>
+            <div class="p-4 flex-1 flex flex-col justify-between gap-4">
+              <div><h3 class="font-bold text-white text-sm line-clamp-2">${p.title}</h3><p class="text-xs text-slate-400 mt-1 line-clamp-2">${p.description || ''}</p></div>
+              <div class="space-y-3"><div class="text-lg font-extrabold text-pix-electric">${formatPrice(p.price)}</div>${actionButton}</div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function renderProducts() {
+      const filtered = state.products.filter(p => {
+        const matchCat = state.selectedCategory === 'todos' ||
+          (state.selectedCategory === 'usados' ? p.condition === 'USADO' : p.category === state.selectedCategory);
+        const matchCond = state.selectedCondition === 'all' || p.condition === state.selectedCondition;
+        const matchQuery = !state.searchQuery ||
+          p.title.toLowerCase().includes(state.searchQuery) ||
+          (p.description && p.description.toLowerCase().includes(state.searchQuery));
+        return matchCat && matchCond && matchQuery;
+      });
+
+      const newProducts = filtered.filter(p => p.condition === 'NUEVO');
+      const usedProducts = filtered.filter(p => p.condition === 'USADO');
+      const showNew = state.selectedCategory !== 'usados' && state.selectedCondition !== 'USADO';
+      const showUsed = state.selectedCondition !== 'NUEVO';
+
+      document.getElementById('resultsCounter').textContent =
+        `${filtered.length} ${filtered.length === 1 ? 'publicación' : 'publicaciones'}`;
+      document.getElementById('newProductsCounter').textContent = `${newProducts.length} productos`;
+      document.getElementById('newProductsSection').classList.toggle('hidden', !showNew);
+      document.getElementById('usedProductsSection').classList.toggle('hidden', !showUsed);
+
+      document.getElementById('newProductsGrid').innerHTML = renderProductCards(newProducts);
+      document.getElementById('usedProductsGrid').innerHTML = renderProductCards(usedProducts);
+      document.getElementById('newEmptyState').classList.toggle('hidden', newProducts.length > 0 || !showNew);
+      document.getElementById('usedEmptyState').classList.toggle('hidden', usedProducts.length > 0 || !showUsed);
+    }
+
+    // Modal Publicar Usado
+    function openPublishModal() {
+      document.getElementById('publishModal').classList.remove('hidden');
+    }
+    function closePublishModal() {
+      document.getElementById('publishModal').classList.add('hidden');
+      document.getElementById('publishForm').reset();
+      document.getElementById('imagePreviewContainer').innerHTML = '';
+      state.uploadedPhotos = [];
+    }
+
+    function previewUploadedImages(event) {
+      const files = Array.from(event.target.files || []);
+      const container = document.getElementById('imagePreviewContainer');
+      container.innerHTML = '';
+      state.uploadedPhotos = [];
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          state.uploadedPhotos.push(e.target.result);
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'w-16 h-16 object-cover rounded-lg border border-pix-border shrink-0';
+          container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function submitUsedProduct(event) {
+      event.preventDefault();
+      const newProduct = {
+        id: 'used_' + Date.now(),
+        condition: 'USADO',
+        title: document.getElementById('pubTitle').value.trim(),
+        category: document.getElementById('pubCategory').value,
+        price: Number(document.getElementById('pubPrice').value),
+        sellerWhatsapp: document.getElementById('pubWhatsapp').value.trim(),
+        description: document.getElementById('pubDescription').value.trim(),
+        images: [...state.uploadedPhotos],
+        createdAt: new Date().toISOString()
+      };
+
+      await DataService.saveUsedProduct(newProduct);
+      state.products = await DataService.getAllProducts();
+      closePublishModal();
+      renderProducts();
+    }
+
+    // Carrito Tienda (Productos NUEVOS)
+    function toggleCart() {
+      document.getElementById('cartDrawer').classList.toggle('hidden');
+    }
+
+    function addToCart(productId) {
+      const prod = state.products.find(p => p.id === productId && p.condition === 'NUEVO');
+      if (!prod) return;
+      const existing = state.cart.find(i => i.id === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        state.cart.push({ ...prod, qty: 1 });
+      }
+      renderCart();
+      toggleCart();
+    }
+
+    function removeFromCart(productId) {
+      state.cart = state.cart.filter(i => i.id !== productId);
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      const countEl = document.getElementById('cartCount');
+      const totalEl = document.getElementById('cartTotal');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+
+      const totalQty = state.cart.reduce((acc, item) => acc + item.qty, 0);
+      const totalAmount = state.cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+
+      countEl.textContent = totalQty;
+      totalEl.textContent = formatPrice(totalAmount);
+      checkoutBtn.disabled = state.cart.length === 0;
+
+      if (state.cart.length === 0) {
+        container.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">Tu carrito está vacío.</p>`;
+        return;
+      }
+
+      container.innerHTML = state.cart.map(item => `
+        <div class="bg-pix-bg border border-pix-border rounded-xl p-3 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold text-white">${item.title}</div>
+            <div class="text-xs text-pix-electric mt-0.5">${item.qty} x ${formatPrice(item.price)}</div>
+          </div>
+          <button onclick="removeFromCart('${item.id}')" class="text-xs text-rose-400 hover:text-rose-300">Quitar</button>
+        </div>
+      `).join('');
+    }
+
+    function checkoutStoreCart() {
+      if (state.cart.length === 0) return;
+      const lines = state.cart.map(i => `- ${i.qty}x ${i.title} (${formatPrice(i.price * i.qty)})`);
+      const total = state.cart.reduce((acc, i) => acc + i.price * i.qty, 0);
+      const msg = `Hola PIXBOX! Quiero realizar la siguiente compra de tienda:
+
+${lines.join('\\n')}
+
+Total: ${formatPrice(total)}`;
+      window.open(`https://wa.me/${PIXBOX_CONFIG.storeWhatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
